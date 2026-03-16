@@ -3,145 +3,162 @@
 Operational guide for coding agents working in this repository.
 
 ## 1) Repository Snapshot
-- Language: Python (requires `>=3.13`).
-- Package manager and task runner: `uv`.
-- Project layout is `src/`-based (`src/main.py`).
-- Primary configuration is in `pyproject.toml`.
-- Current dev tools already configured: `ruff`, `mypy`, `pytest`.
+- Language: Python (`requires-python = ">=3.13"`).
+- Package manager and runner: `uv`.
+- Layout: `src/` package with runtime entrypoint in `src/main.py`.
+- Core runtime dependency: `chdb`.
+- Dev toolchain from `pyproject.toml`: `ruff`, `mypy`, `pytest`.
 
 ## 2) Source of Truth
-- Treat `pyproject.toml` as canonical for tool behavior.
-- Treat `.gitignore` as canonical for ignored paths.
-- There is no separate `pytest.ini`, `mypy.ini`, `ruff.toml`, `tox.ini`, or `setup.cfg`.
-- If this file conflicts with tool config, follow tool config.
+- Treat `pyproject.toml` as canonical for lint/type/test behavior.
+- Treat `.gitignore` as canonical for ignored/ephemeral files.
+- There is no `ruff.toml`, `mypy.ini`, `pytest.ini`, `setup.cfg`, or `tox.ini`.
+- If this document conflicts with tool config, follow the tool config.
 
 ## 3) Cursor / Copilot Rules
-Checked on 2026-03-15:
+Checked on 2026-03-16:
 - `.cursorrules`: not present.
 - `.cursor/rules/`: not present.
 - `.github/copilot-instructions.md`: not present.
-Implication:
-- No editor-specific rule files are currently enforced.
-- If any of these files are added later, treat them as mandatory and update this document.
+
+Implications for agents:
+- No editor-specific policy files are currently active.
+- Re-check these paths before major edits because these files can be added later.
+- If found, treat their instructions as mandatory and update this document.
 
 ## 4) Environment Setup
 - Verify Python: `python3 --version`
 - Verify uv: `uv --version`
-- Sync environment: `uv sync`
-- Run commands in environment: `uv run <command>`
-One-time bootstrap:
+- Bootstrap environment: `uv sync`
+- Run any tool inside environment: `uv run <command>`
+
+Recommended bootstrap sequence:
 ```bash
+python3 --version
+uv --version
 uv sync
 ```
 
 ## 5) Build / Run / Lint / Test Commands
+
 ### Run / Smoke
-- Run app entrypoint: `uv run python src/main.py`
+- Run script entrypoint: `uv run python src/main.py`
 - Run as module: `uv run python -m src.main`
 
-### Lint and Format (Ruff)
+### Lint + Format (Ruff)
 - Lint all files: `uv run ruff check .`
 - Lint and auto-fix: `uv run ruff check . --fix`
 - Check formatting only: `uv run ruff format . --check`
 - Apply formatting: `uv run ruff format .`
 
-### Type Check (Mypy)
-- Type-check project: `uv run mypy .`
-- Type-check one file: `uv run mypy src/main.py`
+### Type Checking (Mypy)
+- Type-check full repo: `uv run mypy .`
+- Type-check single file: `uv run mypy src/main.py`
 
 ### Tests (Pytest)
-- Run full suite: `uv run pytest`
+- Run full test suite: `uv run pytest`
 - Quiet output: `uv run pytest -q`
 - Stop on first failure: `uv run pytest -x`
-- Verbose failures summary: `uv run pytest -ra`
+- Show extra summary: `uv run pytest -ra`
 
 ### Single-Test Execution (Important)
-- Run one file: `uv run pytest tests/test_example.py`
-- Run one test function: `uv run pytest tests/test_example.py::test_happy_path`
-- Run one test method: `uv run pytest tests/test_example.py::TestParser::test_happy_path`
-- Run one test class: `uv run pytest tests/test_example.py::TestParser`
-- Filter by name: `uv run pytest -k "happy_path and not slow"`
-- Show stdout/stderr: `uv run pytest -s tests/test_example.py::test_happy_path`
+Use these patterns whenever tests exist in `tests/`:
+- One file: `uv run pytest tests/test_parser.py`
+- One function: `uv run pytest tests/test_parser.py::test_parses_valid_query`
+- One class: `uv run pytest tests/test_parser.py::TestParser`
+- One test method: `uv run pytest tests/test_parser.py::TestParser::test_parses_valid_query`
+- Name filter: `uv run pytest -k "parser and not slow"`
+- Show print/debug output: `uv run pytest -s tests/test_parser.py::test_parses_valid_query`
+
+Current repo status note:
+- `tests/` currently has no tracked `test_*.py` files, so add tests before relying on commands above.
 
 ### Optional Coverage
-- Add plugin: `uv add --dev pytest-cov`
-- Run coverage: `uv run pytest --cov=. --cov-report=term-missing`
+- Add coverage plugin: `uv add --dev pytest-cov`
+- Run coverage report: `uv run pytest --cov=. --cov-report=term-missing`
 
-## 6) Tooling Constraints from pyproject.toml
-- Ruff line length is set to `120` (not 88).
-- Ruff lint rule set is broad: `select = ["ALL"]` with explicit ignores.
-- Mypy runs in strict mode: `[tool.mypy] strict = true`.
-- Write code that is fully typed and strict-mypy clean.
-- Keep lines <=120 chars unless unavoidable.
-- Do not rely on import sorting by Ruff (`I` rules are ignored), but still keep imports tidy.
+## 6) Codebase Structure (Quick Map)
+- `src/main.py`: example CLI-style driver that parses SQL and runs all rules.
+- `src/core/_parser.py`: wraps `chdb` `EXPLAIN AST` and constructs AST nodes.
+- `src/core/_ast_node.py`: minimal AST node model.
+- `src/core/_base_rule.py`: abstract contract for lint rules (`visit`, `result`).
+- `src/rules/CL*.py`: concrete rule implementations discovered at runtime.
+- `src/rules/__init__.py`: dynamic rule loader via `importlib` + file globbing.
 
-## 7) Code Style Guidelines
-### General
-- Favor clear, explicit, boring code over clever abstractions.
-- Keep functions small and focused on one responsibility.
-- Avoid hidden side effects; make data flow obvious.
+## 7) Tooling Constraints from `pyproject.toml`
+- Ruff line length is `120`.
+- Ruff lint policy is broad: `select = ["ALL"]` with explicit ignores.
+- Ruff import sorting rules (`I`) are ignored; keep imports tidy manually.
+- Mypy strict mode is enabled (`strict = true`).
+- New/changed code should pass strict mypy without local relaxations.
+
+## 8) Code Style Guidelines
+
+### General Design
+- Prefer explicit, straightforward code over clever abstractions.
+- Keep functions focused and side effects obvious.
+- Preserve existing behavior unless change is requested.
+
+### Imports
+- Prefer absolute imports that match existing package layout.
+- Order groups as: stdlib, third-party, local.
+- Use one blank line between import groups.
+- Avoid wildcard imports.
+- Remove unused imports promptly.
 
 ### Formatting
 - Use 4-space indentation.
-- Keep line length at or below 120 chars.
-- Prefer trailing commas in multiline literals/calls to reduce diff churn.
-- Prefer one statement per line.
-
-### Imports
-- Use absolute imports by default.
-- Group imports in order: stdlib, third-party, local.
-- Separate groups with one blank line.
-- Do not use wildcard imports (`from module import *`).
-- Remove unused imports promptly.
+- Keep lines at or below 120 chars.
+- Prefer trailing commas in multiline constructs.
+- Avoid packing multiple statements onto one line.
 
 ### Typing
-- Type annotate all new/modified function parameters and return values.
-- Prefer built-in generics (`list[str]`, `dict[str, int]`).
-- Use `X | None` style unions where appropriate.
-- Prefer `TypedDict`/`dataclass`/`Protocol` over unstructured `dict` and `Any`.
-- Keep `Any` usage minimal and local; document why when unavoidable.
+- Add type hints for all new/modified function parameters and return values.
+- Prefer built-in generic types (`list[str]`, `dict[str, int]`).
+- Use `X | None` instead of `Optional[X]` unless context requires otherwise.
+- Avoid `Any`; if unavoidable, keep scope narrow and justify it in code.
+- Favor small, typed data structures (`dataclass`, `TypedDict`, `Protocol`) over loose dicts.
 
 ### Naming
-- Modules/files: `snake_case.py`
-- Functions/variables: `snake_case`
-- Classes: `PascalCase`
-- Constants: `UPPER_SNAKE_CASE`
-- Internal helpers: prefix with `_`
+- Modules/files: `snake_case.py`.
+- Functions/variables: `snake_case`.
+- Classes: `PascalCase`.
+- Constants: `UPPER_SNAKE_CASE`.
+- Internal helpers: prefix with `_`.
 
-### Docstrings
-- Add docstrings for public modules, classes, and non-trivial public functions.
-- Start with a short imperative summary line.
-- Include args/returns/raises when behavior is non-obvious.
+### Docstrings and Comments
+- Add docstrings for public modules/classes and non-trivial public functions.
+- Start docstrings with a short imperative summary line.
+- Keep comments for non-obvious intent, not for restating code.
 
 ### Error Handling
-- Fail fast with actionable messages.
-- Catch specific exceptions, not broad `Exception` unless re-raising with context.
-- Never silently swallow errors.
-- Preserve tracebacks when wrapping errors: `raise NewError(...) from exc`.
-- Validate input at boundaries (CLI args, file I/O, env vars, external data).
+- Fail fast with actionable errors.
+- Validate external inputs (CLI args, file I/O, query text boundaries).
+- Catch specific exceptions only; avoid blanket `except Exception`.
+- When wrapping errors, preserve traceback via `raise NewError(...) from exc`.
 
-### Logging and CLI Output
-- Use `logging` for diagnostics in reusable/library code.
-- Use `print` only for user-facing CLI output.
-- Keep error output concise and actionable.
+### Logging and Output
+- Use `print` for user-facing CLI output.
+- Prefer `logging` for reusable internals or diagnostic traces.
+- Keep outputs concise and directly actionable.
 
-### Testing
-- Put tests in `tests/`.
-- Name files `test_*.py`.
-- Name tests by behavior (what), not implementation (how).
-- Use Arrange / Act / Assert structure.
-- Cover at least one failure path for non-trivial logic.
+## 9) Testing Guidance
+- Place tests in `tests/` and name files `test_*.py`.
+- Name tests by behavior (what), not implementation details (how).
+- Follow Arrange / Act / Assert structure.
+- Include failure-path tests for non-trivial logic.
+- For parser/rule changes, prefer focused single-test runs first, then full suite.
 
-## 8) Change Management for Agents
-- Keep diffs minimal and focused on the requested task.
-- Do not add dependencies unless necessary for the task.
-- When adding tools/dependencies, update `pyproject.toml` and lockfile.
-- Do not rewrite unrelated files just for style consistency.
-- Preserve existing behavior unless a change is explicitly requested.
+## 10) Change Management for Agents
+- Keep diffs minimal and task-focused.
+- Do not refactor unrelated files opportunistically.
+- Do not add dependencies unless required by the task.
+- If dependencies change, update both `pyproject.toml` and `uv.lock`.
+- Do not edit generated caches (`.mypy_cache`, `.ruff_cache`, `.pytest_cache`).
 
-## 9) Quick Agent Checklist
+## 11) Agent Workflow Checklist
 - Read `pyproject.toml` before implementing.
-- Implement minimal code changes.
-- Run targeted checks first, then broader checks.
-- At minimum after edits, run: `uv run ruff check .`, `uv run mypy .`, and `uv run pytest`.
-- For test-related changes, include at least one single-test command in handoff notes.
+- Locate affected modules and keep edits local.
+- Run targeted checks first (single file/test), then broader checks.
+- Minimum post-edit validation: `uv run ruff check .`, `uv run mypy .`, `uv run pytest`.
+- In handoff notes, include at least one concrete single-test command.
