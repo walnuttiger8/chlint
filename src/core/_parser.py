@@ -1,4 +1,4 @@
-import chdb
+import chdb  # type: ignore[import-untyped]
 
 from . import _ast_node
 

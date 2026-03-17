@@ -6,7 +6,7 @@ class Rule(core.BaseRule):
 
     def __init__(self) -> None:
         self._in_expression = False
-        self._seen_literals = set()
+        self._seen_literals: set[str] = set()
 
     def visit(self, node: core.AstNode) -> None:
         if not self._in_expression:
