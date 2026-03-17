@@ -21,7 +21,7 @@ def _parse(lines: list[tuple[int, str]]) -> _ast_node.AstNode:
     pos = 0
     n = len(lines)
 
-    def parse_children(parent_level: int):
+    def parse_children(parent_level: int) -> list[_ast_node.AstNode]:
         nonlocal pos
         children = []
 
@@ -52,14 +52,12 @@ def parse(query: str) -> _ast_node.AstNode:
     rows = []
 
     for row in ast_result.split("\n"):
-        row = _remove_prefix_and_suffix(row, '"')
         if not row:
             continue
 
-        depth = _count_space_prefix(row)
+        depth = _count_space_prefix(_remove_prefix_and_suffix(row, '"'))
 
         row_info = (depth, row.strip())
         rows.append(row_info)
 
-    root = _parse(rows)
-    return root
+    return _parse(rows)

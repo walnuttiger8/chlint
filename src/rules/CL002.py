@@ -2,11 +2,9 @@ import core
 
 
 class Rule(core.BaseRule):
-    """
-    Avoid 'magic' numbers in expressions
-    """
+    """Avoid 'magic' numbers in expressions."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._in_expression = False
         self._seen_literals = set()
 

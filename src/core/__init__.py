@@ -10,6 +10,6 @@ BaseRule = _base_rule.BaseRule
 
 __all__ = [
     "AstNode",
-    "parse",
     "BaseRule",
+    "parse",
 ]

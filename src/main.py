@@ -1,5 +1,9 @@
+import logging
+
 import core
 import rules
+
+logging.basicConfig(level=logging.INFO)
 
 query = """
         select *
@@ -15,12 +19,14 @@ query = """
 
 
 def main() -> None:
+    logger = logging.getLogger("rules")
     root = core.parse(query)
 
     for rule_type in rules.load_all():
         rule = rule_type()
         rule.visit(root)
-        print(rule.result())
+
+        logger.info(rule.result())
 
 
 if __name__ == "__main__":

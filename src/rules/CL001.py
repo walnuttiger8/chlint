@@ -2,11 +2,9 @@ import core
 
 
 class Rule(core.BaseRule):
-    """
-    Duplicate literal
-    """
+    """Duplicate literal."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         self._seen_literals: set[str] = set()
         self._duplicate_literals: set[str] = set()
 
