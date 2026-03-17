@@ -17,5 +17,5 @@ class Rule(core.BaseRule):
         for child in node.children:
             self.visit(child)
 
-    def result(self) -> list[str]:
-        return list(self._duplicate_literals)
+    def result(self) -> core.Diagnostic:
+        return core.Diagnostic(triggered=len(self._duplicate_literals) > 0)

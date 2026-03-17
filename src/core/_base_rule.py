@@ -1,6 +1,12 @@
 import abc
+import dataclasses
 
 from . import _ast_node
+
+
+@dataclasses.dataclass(frozen=True)
+class Diagnostic:
+    triggered: bool
 
 
 class BaseRule(abc.ABC):
@@ -10,5 +16,5 @@ class BaseRule(abc.ABC):
         pass
 
     @abc.abstractmethod
-    def result(self) -> list[str]:
+    def result(self) -> Diagnostic:
         pass
