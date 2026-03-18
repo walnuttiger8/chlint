@@ -55,9 +55,11 @@ def parse(query: str) -> _ast_node.AstNode:
         if not row:
             continue
 
-        depth = _count_space_prefix(_remove_prefix_and_suffix(row, '"'))
+        clear_row = _remove_prefix_and_suffix(row, '"')
 
-        row_info = (depth, row.strip())
+        depth = _count_space_prefix(clear_row)
+
+        row_info = (depth, clear_row.strip())
         rows.append(row_info)
 
     return _parse(rows)

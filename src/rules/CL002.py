@@ -6,8 +6,6 @@ class Rule(core.BaseRule):
 
     def __init__(self) -> None:
         self._in_expression = False
-        self._seen_literals: set[str] = set()
-
         self._triggered = False
 
     def visit(self, node: core.AstNode) -> None:
@@ -18,10 +16,7 @@ class Rule(core.BaseRule):
 
     def _visit_in_expression(self, node: core.AstNode) -> None:
         if node.value.__contains__("Literal"):
-            if node.value in self._seen_literals:
-                self._triggered = True
-
-            self._seen_literals.add(node.value)
+            self._triggered = True
 
         self._base_visit(node)
 
