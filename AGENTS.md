@@ -42,8 +42,8 @@ uv sync
 ## 5) Build / Run / Lint / Test Commands
 
 ### Run / Smoke
-- Run script entrypoint: `uv run python src/main.py`
-- Run as module: `uv run python -m src.main`
+- Run script entrypoint: `uv run python src/main.py` (puts `src/` on `sys.path` via script location, so `import core` works).
+- Custom scripts from repo root: `PYTHONPATH=src uv run python your_script.py` (or run with cwd `src/`).
 
 ### Lint + Format (Ruff)
 - Lint all files: `uv run ruff check .`
