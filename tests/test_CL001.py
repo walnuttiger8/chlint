@@ -1,5 +1,5 @@
-from src import main
-from src.rules.CL001 import Rule
+import main
+from rules.CL001 import Rule
 
 
 def _assert_triggered(query: str) -> None:
