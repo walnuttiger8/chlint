@@ -162,3 +162,15 @@ Current repo status note:
 - Run targeted checks first (single file/test), then broader checks.
 - Minimum post-edit validation: `uv run ruff check .`, `uv run mypy .`, `uv run pytest`.
 - In handoff notes, include at least one concrete single-test command.
+
+## Learned User Preferences
+
+- When the user writes a request in Russian, answer in Russian for that exchange.
+
+## Learned Workspace Facts
+
+- Pytest is configured with `[tool.pytest.ini_options] pythonpath = ["src"]` in `pyproject.toml`, so `uv run pytest` resolves imports from `src/`.
+- Ruff ignores rule `N999` for `tests/**/*.py` and `src/rules/**/*.py`, so `test_CL00N.py` and `CL00N.py` filenames stay valid for rule tests and rule modules.
+- In chdb `EXPLAIN AST` text, SQL `CASE ... WHEN ...` is represented as `Function multiIf` with one `ExpressionList` child: alternating when-condition and then-result nodes, ending with an else branch.
+- CL002 flags literals that appear under an AST `Function` subtree (expression context), not every literal in the query.
+- Rule-focused tests live under `tests/` (for example `test_CL001.py`, `test_CL002.py`, `test_CL003.py`).
