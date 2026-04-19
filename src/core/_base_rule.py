@@ -7,6 +7,7 @@ from . import _ast_node
 @dataclasses.dataclass(frozen=True)
 class Diagnostic:
     triggered: bool
+    code: str
 
 
 class BaseRule(abc.ABC):

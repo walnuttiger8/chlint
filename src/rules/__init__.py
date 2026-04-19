@@ -14,8 +14,6 @@ def load_all() -> list[RuleClass]:
         module = import_module(f"{__name__}.{module_name}")
         rule_class: type[core.BaseRule] = getattr(module, "Rule", None)
 
-        rule_class.__name__ = module_name
-
         if isinstance(rule_class, type) and issubclass(rule_class, core.BaseRule) and rule_class is not core.BaseRule:
             discovered.append(rule_class)
 

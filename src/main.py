@@ -8,14 +8,18 @@ logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger("rules")
 
 
-def exec_with_rules(query: str, rule_types: list[type[core.BaseRule]]) -> None:
+def exec_with_rules(query: str, rule_types: list[type[core.BaseRule]]) -> list[core.Diagnostic]:
     root = core.parse(query)
-    for rule_type in rule_types:
+
+    def _exec_rule(rule_type: type[core.BaseRule]) -> core.Diagnostic:
         rule = rule_type()
         rule.visit(root)
 
-        result = rule.result()
-        logger.info("[%s] triggered %s", rule_type.__name__, result.triggered)
+        return rule.result()
+
+    diagnostics = [_exec_rule(rule_type) for rule_type in rule_types]
+
+    return diagnostics
 
 
 def main() -> None:
@@ -31,7 +35,11 @@ def main() -> None:
               and issue_type not in ('appeal', 'a_note') \
             """
     rule_types = rules.load_all()
-    exec_with_rules(query, rule_types)
+    diagnostics = exec_with_rules(query, rule_types)
+
+    for diagnostic in diagnostics:
+        if diagnostic.triggered:
+            logger.info("[%s] triggered", diagnostic.code)
 
 
 if __name__ == "__main__":

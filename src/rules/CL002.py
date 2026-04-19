@@ -33,4 +33,4 @@ class Rule(core.BaseRule):
             self.visit(child)
 
     def result(self) -> core.Diagnostic:
-        return core.Diagnostic(triggered=self._triggered)
+        return core.Diagnostic(triggered=self._triggered, code="CL002")
