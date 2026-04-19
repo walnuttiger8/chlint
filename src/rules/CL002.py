@@ -21,7 +21,7 @@ class Rule(core.BaseRule):
         self._base_visit(node)
 
     def _visit_not_in_expression(self, node: core.AstNode) -> None:
-        if node.value.__contains__("Function plus"):
+        if node.value.startswith("Function"):
             self._in_expression = True
 
         self._base_visit(node)
