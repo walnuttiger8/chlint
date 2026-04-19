@@ -17,9 +17,7 @@ def exec_with_rules(query: str, rule_types: list[type[core.BaseRule]]) -> list[c
 
         return rule.result()
 
-    diagnostics = [_exec_rule(rule_type) for rule_type in rule_types]
-
-    return diagnostics
+    return [_exec_rule(rule_type) for rule_type in rule_types]
 
 
 def main() -> None:

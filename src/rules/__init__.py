@@ -12,7 +12,7 @@ def load_all() -> list[RuleClass]:
     for path in sorted(Path(__file__).parent.glob("CL*.py")):
         module_name = path.stem
         module = import_module(f"{__name__}.{module_name}")
-        rule_class: type[core.BaseRule] = getattr(module, "Rule", None)
+        rule_class = getattr(module, "Rule", None)
 
         if isinstance(rule_class, type) and issubclass(rule_class, core.BaseRule) and rule_class is not core.BaseRule:
             discovered.append(rule_class)
